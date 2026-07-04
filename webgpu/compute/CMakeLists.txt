@@ -41,6 +41,8 @@ set(SOURCES
     nodes/IterativeSimulationNode.h nodes/IterativeSimulationNode.cpp
     nodes/LoadTextureNode.h nodes/LoadTextureNode.cpp
     nodes/util.h nodes/util.cpp
+        nodes/CreateHeightGrid.cpp
+        nodes/CreateHeightGrid.h
 )
 
 qt_add_library(webgpu_compute STATIC ${SOURCES})

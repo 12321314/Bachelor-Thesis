@@ -328,7 +328,7 @@
             "enabled": true,
             "name": "Select Tiles",
             "settings": {
-                "zoomlevel": 15
+                "zoomlevel": 222
             },
             "type": "SelectTilesNode"
         },

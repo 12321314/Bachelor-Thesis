@@ -31,6 +31,7 @@
 #include "nodes/RequestTilesNode.h"
 #include "nodes/SelectTilesNode.h"
 #include "nodes/TileStitchNode.h"
+#include "nodes/CreateHeightGrid.h"
 #include <QDebug>
 #include <algorithm>
 #include <cassert>
@@ -53,6 +54,7 @@ NodeRegistry::NodeRegistry()
     register_node("IterativeSimulationNode", [](webgpu::Context& c) { return std::make_unique<nodes::IterativeSimulationNode>(c); });
     register_node("ExportNode", [](webgpu::Context& c) { return std::make_unique<nodes::ExportNode>(c); });
     register_node("LoadTextureNode", [](webgpu::Context& c) { return std::make_unique<nodes::LoadTextureNode>(c); });
+    register_node("CreateHeightGrid", [](webgpu::Context&) { return std::make_unique<nodes::CreateHeightGrid>(); });
 }
 
 NodeRegistry& NodeRegistry::instance()

@@ -69,6 +69,13 @@ void SelectTilesNode::run_impl()
     m_output_bounds = { glm::dvec2(std::numeric_limits<double>::max()), glm::dvec2(std::numeric_limits<double>::min()) };
     for (const auto& tile_id : tile_ids) {
         m_output_bounds.expand_by(nucleus::srs::tile_bounds(tile_id));
+        const auto bounds = nucleus::srs::tile_bounds(tile_id);
+
+        qInfo()
+            << "tile width:"
+            << (bounds.max.x - bounds.min.x)
+            << "tile height:"
+            << (bounds.max.y - bounds.min.y);
     }
     qDebug() << Qt::fixed << "selected aabb=[(" << m_output_bounds.min.x << ", " << m_output_bounds.min.y << "), (" << m_output_bounds.max.x << ", "
              << m_output_bounds.max.y << ")]";
