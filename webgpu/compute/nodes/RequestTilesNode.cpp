@@ -20,6 +20,9 @@
 #include "util.h"
 
 #include <QDebug>
+#include <QFileInfo>
+#include <QImage>
+#include <QColor>
 #include <set>
 
 namespace webgpu_compute::nodes {
@@ -90,6 +93,44 @@ void RequestTilesNode::on_single_tile_received(const nucleus::tile::Data& tile)
     }
 
     check_progress_and_emit_signals();
+
+    qInfo() << "size:"
+             << tile.data->size();
+
+    qInfo() << "first bytes:"
+             << tile.data->left(16).toHex();
+
+    QImage img;
+
+    if (!img.loadFromData(*tile.data)) {
+
+        qWarning() << "failed to decode png";
+
+    } else {
+
+        qInfo() << "image size:"
+                 << img.width()
+                 << "x"
+                 << img.height();
+
+        QColor c = img.pixelColor(0, 0);
+
+        qInfo()
+            << "first pixel:"
+            << c.red()
+            << c.green()
+            << c.blue();
+
+        QString filename =
+            QString("tile_%1_%2_%3.png")
+                .arg(tile.id.zoom_level)
+                .arg(tile.id.coords.x)
+                .arg(tile.id.coords.y);
+
+        img.save(filename);
+
+        qInfo() << "saved tile to" << QFileInfo(filename).absoluteFilePath();
+    }
 }
 
 void RequestTilesNode::set_settings(const RequestTilesNodeSettings& settings)

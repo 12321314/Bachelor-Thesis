@@ -94,7 +94,7 @@ qt_add_resources(webgpu_compute "webgpu_compute_shaders"
         "${SHADER_BASE_DIR}/random.wgsl"
     )
 
-target_link_libraries(webgpu_compute PUBLIC nucleus Qt::Core webgpu)
+target_link_libraries(webgpu_compute PUBLIC nucleus Qt::Core Qt::Gui webgpu)
 target_include_directories(webgpu_compute PRIVATE .)
 
 target_compile_definitions(webgpu_compute PUBLIC ALP_SHADER_DIR_WEBGPU_COMPUTE="${CMAKE_CURRENT_SOURCE_DIR}/shaders/")
