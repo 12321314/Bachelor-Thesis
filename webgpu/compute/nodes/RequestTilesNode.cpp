@@ -127,9 +127,10 @@ void RequestTilesNode::on_single_tile_received(const nucleus::tile::Data& tile)
                 .arg(tile.id.coords.x)
                 .arg(tile.id.coords.y);
 
-        img.save(filename);
+        //img.save(filename);
 
-        qInfo() << "saved tile to" << QFileInfo(filename).absoluteFilePath();
+        //qInfo() << "saved tile to" << QFileInfo(filename).absoluteFilePath();
+        //TODO delete this at the end
     }
 }
 

@@ -22,6 +22,7 @@
 #include "../GpuTileStorage.h"
 #include "../GraphRunContext.h"
 #include "radix/tile.h"
+#include "../types/HeightGrid.h"
 #include <QByteArray>
 #include <QJsonObject>
 #include <QObject>
@@ -44,6 +45,8 @@ using Data = std::variant<const std::vector<radix::tile::Id>*,
     const webgpu::raii::TextureWithSampler*,
     const radix::geometry::Aabb<2, double>*,
     const radix::geometry::Aabb<3, double>*,
+    const QImage*,
+    const HeightGrid*,
     glm::uvec2>;
 
 using SocketIndex = size_t;

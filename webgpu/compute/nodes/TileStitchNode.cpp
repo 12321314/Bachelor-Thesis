@@ -39,7 +39,11 @@ webgpu_compute::nodes::TileStitchNode::TileStitchNode(webgpu::Context& ctx, Stit
               InputSocket(*this, "tile ids", data_type<const std::vector<radix::tile::Id>*>()),
               InputSocket(*this, "texture data", data_type<const std::vector<QByteArray>*>()),
           },
-          { OutputSocket(*this, "texture", data_type<const webgpu::raii::TextureWithSampler*>(), [this]() { return m_output_texture.get(); }) })
+          {
+              OutputSocket(*this, "texture", data_type<const webgpu::raii::TextureWithSampler*>(), [this]() { return m_output_texture.get(); }),
+              OutputSocket(*this, "QImage", data_type<const QImage*>(), [this]() { return &m_output_image; }
+),
+          })
     , m_ctx(&ctx)
     , m_settings(settings)
 {
@@ -73,6 +77,7 @@ void TileStitchNode::run_impl()
     // Calculate the size in tiles and pixel
     glm::uvec2 size_tiles;
     glm::uvec2 size_pixels;
+
     size_tiles = glm::uvec2(bounds.z - bounds.x + 1, bounds.w - bounds.y + 1);
     size_pixels = size_tiles * s;
 
@@ -85,6 +90,13 @@ void TileStitchNode::run_impl()
             + std::to_string(MAX_STITCHED_IMAGE_SIZE) + " pixel for zoom level " + std::to_string(zl));
         return;
     }
+
+    // Create QImage
+    m_output_image = QImage(
+        size_pixels.x,
+        size_pixels.y,
+        QImage::Format_RGBA8888
+    );
 
     // create output texture
     WGPUTextureDescriptor texture_desc {};
@@ -131,6 +143,28 @@ void TileStitchNode::run_impl()
         // Load image (NOTE: Only supports u8vec4 so far)
         images[i] = nucleus::utils::image_loader::rgba8(texture_data).value();
         const auto& image = images[i];
+
+        for (uint32_t y = 0; y < s.y; ++y) {
+
+            for (uint32_t x = 0; x < s.x; ++x) {
+
+                const auto pixel = image.pixel(glm::uvec2(x, y));
+
+                QColor color(
+                    pixel.x,
+                    pixel.y,
+                    pixel.z,
+                    pixel.w
+                );
+
+                m_output_image.setPixelColor(
+                    pos.x + x,
+                    pos.y + y,
+                    color
+                );
+            }
+        }
+
         assert(image.width() == so.x && image.height() == so.y);
 
         WGPUTexelCopyTextureInfo image_copy_texture {};

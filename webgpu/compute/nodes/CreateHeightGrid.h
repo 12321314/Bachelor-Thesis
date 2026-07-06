@@ -3,6 +3,7 @@
 
 #include "Node.h"
 #include "nucleus/tile/TileLoadService.h"
+#include "types/HeightGrid.h"
 
 namespace webgpu_compute::nodes {
 
@@ -19,7 +20,7 @@ public:
     CreateHeightGrid();
     CreateHeightGrid(const CreateHeightGridSettings& settings);
 
-    float decodeHeight(const QColor& c);
+    float decode_height(const QColor& c);
 
     void set_settings(const CreateHeightGridSettings& settings);
     const CreateHeightGridSettings& get_settings() const { return m_settings; }
@@ -28,11 +29,14 @@ public:
 
     void check_progress_and_emit_signals();
 
+    HeightGrid m_height_grid;
+
 public slots:
     void run_impl() override;
 
 private:
     CreateHeightGridSettings m_settings;
+
 };
 
 } // namespace webgpu_compute::nodes
