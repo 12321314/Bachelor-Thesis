@@ -50,6 +50,9 @@ set(SOURCES
         nodes/ComputeCostSurfaceNode.h
         types/Way.h
         types/CostCell.h
+        nodes/CostSurfaceTextureNode.cpp
+        nodes/CostSurfaceTextureNode.h
+        types/CostGrid.h
 )
 
 qt_add_library(webgpu_compute STATIC ${SOURCES})

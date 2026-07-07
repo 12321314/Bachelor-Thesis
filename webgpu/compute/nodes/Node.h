@@ -21,10 +21,12 @@
 
 #include "../GpuTileStorage.h"
 #include "../GraphRunContext.h"
+#include "../types/CostCell.h"
+#include "../types/CostGrid.h"
 #include "../types/HeightGrid.h"
 #include "../types/Way.h"
-#include "../types/CostCell.h"
 #include "radix/tile.h"
+
 
 #include <QByteArray>
 #include <QJsonObject>
@@ -51,7 +53,7 @@ using Data = std::variant<const std::vector<radix::tile::Id>*,
     const QImage*,
     const HeightGrid*,
     const std::vector<Way>*,
-    const std::vector<CostCell>*,
+    const CostGrid*,
     glm::uvec2>;
 
 using SocketIndex = size_t;

@@ -30,7 +30,7 @@ public:
 
     void check_progress_and_emit_signals();
 
-    std::vector<CostCell> m_cost_grid;
+    CostGrid m_cost_grid;
     uint32_t width;
     uint32_t height;
 

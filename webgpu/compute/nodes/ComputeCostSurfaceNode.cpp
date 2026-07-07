@@ -19,7 +19,7 @@ ComputeCostSurfaceNode::ComputeCostSurfaceNode(const ComputeCostSurfaceNodeSetti
           InputSocket(*this, "OSM ways", data_type<const std::vector<Way>*>())
       },
       {
-          OutputSocket(*this, "cost grid", data_type<const std::vector<CostCell>*>(), [this]{return &m_cost_grid;}),
+          OutputSocket(*this, "cost grid", data_type<const CostGrid*>(), [this]{return &m_cost_grid;}),
       })
 {
     set_settings(settings);
@@ -41,8 +41,11 @@ void ComputeCostSurfaceNode::run_impl()
 
     width = height_grid->width;
     height = height_grid->height;
-    m_cost_grid.clear();
-    m_cost_grid.reserve(width * height); //cost grid
+    m_cost_grid.costs.clear();
+    m_cost_grid.costs.reserve(width * height); //cost grid
+    m_cost_grid.width = width;
+    m_cost_grid.height = height;
+    m_cost_grid.cell_size_meters = height_grid->cell_size_meters;
 
     for (int y = 0; y < height; ++y) {
 
@@ -61,7 +64,7 @@ void ComputeCostSurfaceNode::run_impl()
             cell.x = x;
             cell.y = y;
 
-            m_cost_grid.push_back(cell);
+            m_cost_grid.costs.push_back(cell);
         }
     }
 
@@ -90,11 +93,11 @@ void ComputeCostSurfaceNode::run_impl()
 
 
             if (y1 >= 0 && y1 < height && x1 >= 0 && x1 < width) {
-                m_cost_grid[y1 * width + x1].forest = way.forest;
-                m_cost_grid[y1 * width + x1].path = way.path;
-                m_cost_grid[y1 * width + x1].stream = way.stream;
-                m_cost_grid[y1 * width + x1].river = way.river;
-                m_cost_grid[y1 * width + x1].waterbody = way.waterbody;
+                m_cost_grid.costs[y1 * width + x1].forest = way.forest;
+                m_cost_grid.costs[y1 * width + x1].path = way.path;
+                m_cost_grid.costs[y1 * width + x1].stream = way.stream;
+                m_cost_grid.costs[y1 * width + x1].river = way.river;
+                m_cost_grid.costs[y1 * width + x1].waterbody = way.waterbody;
 
                 // waypoints get interpolated with their previous point
                 if (oldX != -1 && oldY != -1) {
@@ -137,11 +140,11 @@ void ComputeCostSurfaceNode::interpolateLine(int x1, int y1, int oldX, int oldY,
 
     while (oldX != x1 || oldY != y1) {
         if (oldX >= 0 && oldX < width && oldY >= 0 && oldY < height) {
-            m_cost_grid[oldY * width + oldX].path = way.path;
-            m_cost_grid[oldY * width + oldX].stream = way.stream;
-            m_cost_grid[oldY * width + oldX].river = way.river;
-            m_cost_grid[oldY * width + oldX].waterbody = way.waterbody;
-            m_cost_grid[oldY * width + oldX].forest = way.forest;
+            m_cost_grid.costs[oldY * width + oldX].path = way.path;
+            m_cost_grid.costs[oldY * width + oldX].stream = way.stream;
+            m_cost_grid.costs[oldY * width + oldX].river = way.river;
+            m_cost_grid.costs[oldY * width + oldX].waterbody = way.waterbody;
+            m_cost_grid.costs[oldY * width + oldX].forest = way.forest;
         }
 
         int e2 = 2 * err;
@@ -166,11 +169,11 @@ void ComputeCostSurfaceNode::calculateSlope(float cellSize) {
     for (int y = 1; y < height - 1; y++) {
         for (int x = 1; x < width - 1; x++) {
 
-            float left  = m_cost_grid[y * width + (x - 1)].elevation;
-            float right = m_cost_grid[y * width + (x + 1)].elevation;
+            float left  = m_cost_grid.costs[y * width + (x - 1)].elevation;
+            float right = m_cost_grid.costs[y * width + (x + 1)].elevation;
 
-            float up    = m_cost_grid[(y - 1) * width + x].elevation;
-            float down  = m_cost_grid[(y + 1) * width + x].elevation;
+            float up    = m_cost_grid.costs[(y - 1) * width + x].elevation;
+            float down  = m_cost_grid.costs[(y + 1) * width + x].elevation;
 
             float dzdx = (right - left) / (2.0f * cellSize);
             float dzdy = (down - up) / (2.0f * cellSize);
@@ -181,7 +184,7 @@ void ComputeCostSurfaceNode::calculateSlope(float cellSize) {
 
             float slopeDeg = slopeRad * 180.0f / M_PI;
 
-            m_cost_grid[y * width + x].slope = slopeDeg;
+            m_cost_grid.costs[y * width + x].slope = slopeDeg;
 
             // gathering important data
             if (slopeDeg > biggestSlope) {
@@ -208,7 +211,7 @@ void ComputeCostSurfaceNode::calculateCost() {
 
     for (int y = 1; y < height - 1; y++) {
         for (int x = 1; x < width - 1; x++) {
-            CostCell cell = m_cost_grid[y * width + x];
+            CostCell cell = m_cost_grid.costs[y * width + x];
             if (cell.forest) {
                 cost = 20 + cell.slope * 1.5;
             }
@@ -237,7 +240,7 @@ void ComputeCostSurfaceNode::calculateCost() {
                 cost = 0;
             }
 
-            m_cost_grid[y * width + x].cost = cost;
+            m_cost_grid.costs[y * width + x].cost = cost;
         }
     }
 }

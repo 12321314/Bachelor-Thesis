@@ -41,8 +41,7 @@ webgpu_compute::nodes::TileStitchNode::TileStitchNode(webgpu::Context& ctx, Stit
           },
           {
               OutputSocket(*this, "texture", data_type<const webgpu::raii::TextureWithSampler*>(), [this]() { return m_output_texture.get(); }),
-              OutputSocket(*this, "QImage", data_type<const QImage*>(), [this]() { return &m_output_image; }
-),
+              OutputSocket(*this, "QImage", data_type<const QImage*>(), [this]() { return &m_output_image; }),
           })
     , m_ctx(&ctx)
     , m_settings(settings)

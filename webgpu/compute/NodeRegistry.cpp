@@ -24,6 +24,7 @@
 #include "nodes/ComputeNormalsNode.h"
 #include "nodes/ComputeReleasePointsNode.h"
 #include "nodes/ComputeSnowNode.h"
+#include "nodes/CostSurfaceTextureNode.h"
 #include "nodes/CreateHeightGrid.h"
 #include "nodes/ExportNode.h"
 #include "nodes/GPXTrackNode.h"
@@ -60,6 +61,7 @@ NodeRegistry::NodeRegistry()
     register_node("CreateHeightGrid", [](webgpu::Context&) { return std::make_unique<nodes::CreateHeightGrid>(); });
     register_node("LoadOSMNode", [](webgpu::Context&) { return std::make_unique<nodes::LoadOSMNode>(); });
     register_node("ComputeCostSurfaceNode", [](webgpu::Context&) { return std::make_unique<nodes::ComputeCostSurfaceNode>(); });
+    register_node("CostSurfaceTextureNode", [](webgpu::Context& c) { return std::make_unique<nodes::CostSurfaceTextureNode>(c); });
 }
 
 NodeRegistry& NodeRegistry::instance()
