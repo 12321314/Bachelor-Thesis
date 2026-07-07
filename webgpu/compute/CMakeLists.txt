@@ -44,6 +44,12 @@ set(SOURCES
         nodes/CreateHeightGrid.cpp
         nodes/CreateHeightGrid.h
         types/HeightGrid.h
+        nodes/LoadOSMNode.cpp
+        nodes/LoadOSMNode.h
+        nodes/ComputeCostSurfaceNode.cpp
+        nodes/ComputeCostSurfaceNode.h
+        types/Way.h
+        types/CostCell.h
 )
 
 qt_add_library(webgpu_compute STATIC ${SOURCES})

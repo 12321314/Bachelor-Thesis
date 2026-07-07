@@ -25,7 +25,7 @@ CreateHeightGrid::CreateHeightGrid()
     : CreateHeightGrid(CreateHeightGridSettings())
 {
 }
-
+//TODO rename to CreateHeightGridNode
 void CreateHeightGrid::run_impl()
 {
     const auto& image = *std::get<data_type<const QImage*>()>(input_socket("QImage").get_connected_data());

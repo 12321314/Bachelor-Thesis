@@ -20,18 +20,21 @@
 
 #include "nodes/BufferToTextureNode.h"
 #include "nodes/ComputeAvalancheTrajectoriesNode.h"
+#include "nodes/ComputeCostSurfaceNode.h"
 #include "nodes/ComputeNormalsNode.h"
 #include "nodes/ComputeReleasePointsNode.h"
 #include "nodes/ComputeSnowNode.h"
+#include "nodes/CreateHeightGrid.h"
 #include "nodes/ExportNode.h"
 #include "nodes/GPXTrackNode.h"
 #include "nodes/HeightDecodeNode.h"
 #include "nodes/IterativeSimulationNode.h"
+#include "nodes/LoadOSMNode.h"
 #include "nodes/LoadTextureNode.h"
 #include "nodes/RequestTilesNode.h"
 #include "nodes/SelectTilesNode.h"
 #include "nodes/TileStitchNode.h"
-#include "nodes/CreateHeightGrid.h"
+
 #include <QDebug>
 #include <algorithm>
 #include <cassert>
@@ -55,6 +58,8 @@ NodeRegistry::NodeRegistry()
     register_node("ExportNode", [](webgpu::Context& c) { return std::make_unique<nodes::ExportNode>(c); });
     register_node("LoadTextureNode", [](webgpu::Context& c) { return std::make_unique<nodes::LoadTextureNode>(c); });
     register_node("CreateHeightGrid", [](webgpu::Context&) { return std::make_unique<nodes::CreateHeightGrid>(); });
+    register_node("LoadOSMNode", [](webgpu::Context&) { return std::make_unique<nodes::LoadOSMNode>(); });
+    register_node("ComputeCostSurfaceNode", [](webgpu::Context&) { return std::make_unique<nodes::ComputeCostSurfaceNode>(); });
 }
 
 NodeRegistry& NodeRegistry::instance()
