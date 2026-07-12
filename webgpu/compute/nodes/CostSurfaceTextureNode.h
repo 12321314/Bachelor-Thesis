@@ -10,10 +10,12 @@ class CostSurfaceTextureNode : public Node
     Q_OBJECT
 
 public:
-    NODE_TYPE_NAME(CreateCostSurfaceTexture)
+    NODE_TYPE_NAME(CreateCostSurfaceTextureNode)
 
     struct CostSurfaceTextureNodeSettings
     {
+        std::string overlay_mode = "Cost"; // can be Cost, Paths, or Cliffs
+
         WGPUTextureFormat format = WGPUTextureFormat_RGBA8Unorm;
         WGPUTextureUsage usage =
             WGPUTextureUsage_TextureBinding |

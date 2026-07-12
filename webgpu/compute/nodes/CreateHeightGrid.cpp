@@ -1,5 +1,7 @@
 #include "CreateHeightGrid.h"
+#include "nucleus/srs.h"
 #include "util.h"
+
 #include <QColor>
 #include <QImage>
 
@@ -13,6 +15,7 @@ CreateHeightGrid::CreateHeightGrid(const CreateHeightGridSettings& settings)
 : Node(
       {
           InputSocket(*this, "QImage", data_type<const QImage*>()),
+          InputSocket(*this, "tile dimension", data_type<const std::vector<float>*>())
       },
       {
           OutputSocket(*this, "height grid", data_type<const HeightGrid*>(), [this]() { return &m_height_grid;}),
@@ -29,6 +32,7 @@ CreateHeightGrid::CreateHeightGrid()
 void CreateHeightGrid::run_impl()
 {
     const auto& image = *std::get<data_type<const QImage*>()>(input_socket("QImage").get_connected_data());
+    const auto& dimensions = *std::get<data_type<const std::vector<float>*>()>(input_socket("tile dimension").get_connected_data());
 
     if (image.isNull()) {
         fail_run("invalid image");
@@ -43,8 +47,10 @@ void CreateHeightGrid::run_impl()
     m_height_grid.width = width;
     m_height_grid.height = height;
 
-    // this implementation is made specifically for zoom level 16 which covers around 9.4m per pixel
-    m_height_grid.cell_size_meters = 9.407630769230769f; //TODO this could technically be made to work with all zoom levels
+    m_height_grid.cell_size_meters = dimensions[0] / dimensions[1];
+
+    qInfo() << "image width:" << dimensions[0];
+    qInfo() << "image dimension:" << dimensions[1];
 
     m_height_grid.heights.resize(width * height);
 

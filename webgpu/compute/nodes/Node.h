@@ -54,6 +54,7 @@ using Data = std::variant<const std::vector<radix::tile::Id>*,
     const HeightGrid*,
     const std::vector<Way>*,
     const CostGrid*,
+    const std::vector<float>*,
     glm::uvec2>;
 
 using SocketIndex = size_t;

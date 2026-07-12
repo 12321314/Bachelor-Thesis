@@ -72,44 +72,91 @@ void CostSurfaceTextureNode::run_impl()
 
     std::vector<glm::u8vec4> pixels(grid->width * grid->height);
 
-    for (size_t i = 0; i < pixels.size(); i++)
+    if (m_settings.overlay_mode == "Cost")
     {
-        float cost = grid->costs[i].cost;
-        float t = cost / 99.0f;
+        for (size_t i = 0; i < pixels.size(); i++)
+        {
+            float cost = grid->costs[i].cost;
+            float t = cost / 99.0f;
 
-        unsigned char r, g, b;
+            unsigned char r, g, b;
 
-        if (t < 0.5f) {
+            if (t < 0.5f) {
 
-            // green to yellow
-            float k = t / 0.5f;
+                // green to yellow
+                float k = t / 0.5f;
 
-            r = (unsigned char)(255 * k);
-            g = 255;
-            b = 0;
+                r = (unsigned char)(255 * k);
+                g = 255;
+                b = 0;
 
-        } else {
+            } else {
 
-            // yellow to red
-            float k = (t - 0.5f) / 0.5f;
+                // yellow to red
+                float k = (t - 0.5f) / 0.5f;
 
-            r = 255;
-            g = (unsigned char)(255 * (1.0f - k));
-            b = 0;
+                r = 255;
+                g = (unsigned char)(255 * (1.0f - k));
+                b = 0;
+            }
+
+            // special case
+            if (cost == 99) {
+                r = 0;
+                g = 0;
+                b = 0;
+            }
+
+            pixels[i] = glm::u8vec4(
+                r,
+                g,
+                b,
+                255);
         }
+    }
+    else if (m_settings.overlay_mode == "Paths")
+    {
+        for (size_t i = 0; i < pixels.size(); i++)
+        {
+            bool path = grid->costs[i].path;
 
-        // special case
-        if (cost == 99) {
-            r = 0;
-            g = 0;
-            b = 0;
+            if (path) {
+                pixels[i] = glm::u8vec4(
+                255,
+                255,
+                0,
+                255);
+            }
+            else {
+                pixels[i] = glm::u8vec4(
+                0,
+                0,
+                0,
+                0);
+            }
         }
+    }
+    else if (m_settings.overlay_mode == "Cliffs")
+    {
+        for (size_t i = 0; i < pixels.size(); i++)
+        {
+            float cost = grid->costs[i].cost;
 
-        pixels[i] = glm::u8vec4(
-            r,
-            g,
-            b,
-            255);
+            if (cost == 99) {
+                pixels[i] = glm::u8vec4(
+                255,
+                0,
+                0,
+                255);
+            }
+            else {
+                pixels[i] = glm::u8vec4(
+                0,
+                0,
+                0,
+                0);
+            }
+        }
     }
 
     // -----------------------------

@@ -17,12 +17,13 @@
  *****************************************************************************/
 
 #include "RequestTilesNode.h"
+#include "nucleus/srs.h"
 #include "util.h"
 
+#include <QColor>
 #include <QDebug>
 #include <QFileInfo>
 #include <QImage>
-#include <QColor>
 #include <set>
 
 namespace webgpu_compute::nodes {
@@ -34,6 +35,7 @@ RequestTilesNode::RequestTilesNode(const RequestTilesNodeSettings& settings)
           },
           {
               OutputSocket(*this, "tile data", data_type<const std::vector<QByteArray>*>(), [this]() { return &m_received_tile_textures; }),
+              OutputSocket(*this, "tile dimension", data_type<const std::vector<float>*>(), [this]() { return &m_tile_dimension; }),
           })
 {
     set_settings(settings);
@@ -58,6 +60,12 @@ void RequestTilesNode::run_impl()
         qDebug() << "tiles already requested, use cache";
         check_progress_and_emit_signals();
         return;
+    }
+
+    // get tile dimension
+    if (!tile_ids.empty()) {
+        const auto bounds = nucleus::srs::tile_bounds(tile_ids[0]);
+        m_tile_dimension[0] = bounds.width();
     }
 
     // send request for each tile
@@ -93,6 +101,18 @@ void RequestTilesNode::on_single_tile_received(const nucleus::tile::Data& tile)
     }
 
     check_progress_and_emit_signals();
+
+    // get tile dimension
+    if (m_tile_dimension[1] == 0.0f) {
+        QImage img;
+
+        if (!img.loadFromData(*tile.data)) {
+            qWarning() << "failed to decode png";
+        }
+
+        m_tile_dimension[1] = img.width();
+    }
+
 
     qInfo() << "size:"
              << tile.data->size();

@@ -58,6 +58,7 @@ private:
     size_t m_num_tiles_requested = 0;
     std::vector<QByteArray> m_received_tile_textures;
     std::vector<radix::tile::Id> m_requested_tile_ids;
+    std::vector<float> m_tile_dimension{2};
 };
 
 } // namespace webgpu_compute::nodes
