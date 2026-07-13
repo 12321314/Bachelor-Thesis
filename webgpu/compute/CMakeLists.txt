@@ -53,6 +53,8 @@ set(SOURCES
         nodes/CostSurfaceTextureNode.cpp
         nodes/CostSurfaceTextureNode.h
         types/CostGrid.h
+        nodes/CalculateRouteNode.cpp
+        nodes/CalculateRouteNode.h
 )
 
 qt_add_library(webgpu_compute STATIC ${SOURCES})

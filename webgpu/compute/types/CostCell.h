@@ -7,6 +7,7 @@ struct CostCell {
     float cost;
 
     bool selected;
+    bool controlPoint = false;
 
     bool forest;
     bool path;

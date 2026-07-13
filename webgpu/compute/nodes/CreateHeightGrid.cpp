@@ -15,7 +15,8 @@ CreateHeightGrid::CreateHeightGrid(const CreateHeightGridSettings& settings)
 : Node(
       {
           InputSocket(*this, "QImage", data_type<const QImage*>()),
-          InputSocket(*this, "tile dimension", data_type<const std::vector<float>*>())
+          InputSocket(*this, "tile dimension", data_type<const std::vector<float>*>()),
+          InputSocket(*this, "region aabb", data_type<const radix::geometry::Aabb<2,double>*>())
       },
       {
           OutputSocket(*this, "height grid", data_type<const HeightGrid*>(), [this]() { return &m_height_grid;}),
@@ -33,6 +34,7 @@ void CreateHeightGrid::run_impl()
 {
     const auto& image = *std::get<data_type<const QImage*>()>(input_socket("QImage").get_connected_data());
     const auto& dimensions = *std::get<data_type<const std::vector<float>*>()>(input_socket("tile dimension").get_connected_data());
+    const auto& region = std::get<data_type<const radix::geometry::Aabb<2,double>*>()>(input_socket("region aabb").get_connected_data());
 
     if (image.isNull()) {
         fail_run("invalid image");
@@ -46,6 +48,8 @@ void CreateHeightGrid::run_impl()
 
     m_height_grid.width = width;
     m_height_grid.height = height;
+    m_height_grid.origin_x = region->min.x;
+    m_height_grid.origin_y = region->max.y;
 
     m_height_grid.cell_size_meters = dimensions[0] / dimensions[1];
 

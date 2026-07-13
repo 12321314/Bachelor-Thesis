@@ -45,6 +45,8 @@ void ComputeCostSurfaceNode::run_impl()
     m_cost_grid.costs.reserve(width * height); //cost grid
     m_cost_grid.width = width;
     m_cost_grid.height = height;
+    m_cost_grid.origin_x = height_grid->origin_x;
+    m_cost_grid.origin_y = height_grid->origin_y;
     m_cost_grid.cell_size_meters = height_grid->cell_size_meters;
 
     for (int y = 0; y < height; ++y) {
@@ -88,8 +90,8 @@ void ComputeCostSurfaceNode::run_impl()
 
             lat_lon = nucleus::srs::lat_long_to_world(lat_lon);
 
-            int x1 = (int)((lat_lon.y - height_grid->origin_x) / height_grid->cell_size_meters);
-            int y1 = (int)((height_grid->origin_y - lat_lon.x) / height_grid->cell_size_meters);
+            int x1 = (int)((lat_lon.x - height_grid->origin_x) / height_grid->cell_size_meters);
+            int y1 = (int)((height_grid->origin_y - lat_lon.y) / height_grid->cell_size_meters);
 
 
             if (y1 >= 0 && y1 < height && x1 >= 0 && x1 < width) {

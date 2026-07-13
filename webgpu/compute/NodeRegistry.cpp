@@ -19,6 +19,7 @@
 #include "NodeRegistry.h"
 
 #include "nodes/BufferToTextureNode.h"
+#include "nodes/CalculateRouteNode.h"
 #include "nodes/ComputeAvalancheTrajectoriesNode.h"
 #include "nodes/ComputeCostSurfaceNode.h"
 #include "nodes/ComputeNormalsNode.h"
@@ -62,6 +63,7 @@ NodeRegistry::NodeRegistry()
     register_node("LoadOSMNode", [](webgpu::Context&) { return std::make_unique<nodes::LoadOSMNode>(); });
     register_node("ComputeCostSurfaceNode", [](webgpu::Context&) { return std::make_unique<nodes::ComputeCostSurfaceNode>(); });
     register_node("CostSurfaceTextureNode", [](webgpu::Context& c) { return std::make_unique<nodes::CostSurfaceTextureNode>(c); });
+    register_node("CalculateRouteNode", [](webgpu::Context& c) { return std::make_unique<nodes::CalculateRouteNode>(c); });
 }
 
 NodeRegistry& NodeRegistry::instance()
