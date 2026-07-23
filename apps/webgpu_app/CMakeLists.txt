@@ -57,6 +57,8 @@ set(SOURCES
     overlay/TileDebugOverlayImGuiRenderer.h overlay/TileDebugOverlayImGuiRenderer.cpp
         compute/nodes/CostSurfaceTextureNodeRenderer.cpp
         compute/nodes/CostSurfaceTextureNodeRenderer.h
+        compute/RouteRenderNode.cpp
+        compute/RouteRenderNode.h
 )
 
 if (ALP_WEBGPU_APP_ENABLE_COMPUTE)

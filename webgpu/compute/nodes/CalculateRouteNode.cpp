@@ -1,6 +1,7 @@
 #include "CalculateRouteNode.h"
 
 #include "nucleus/srs.h"
+#include "webgpu/engine/track/TrackRenderer.h"
 
 namespace webgpu_compute::nodes {
 
@@ -17,6 +18,7 @@ CalculateRouteNode::CalculateRouteNode(webgpu::Context& ctx,const CalculateRoute
       },
       {
           OutputSocket(*this, "texture", data_type<const webgpu::raii::TextureWithSampler*>(), [this]() { return m_texture.get();}),
+          OutputSocket(*this, "route", data_type<const std::vector<glm::vec4>>(), [this]() { return m_path;}),
       })
       , m_ctx(&ctx)
       , m_settings(settings)
@@ -249,14 +251,18 @@ void CalculateRouteNode::calculateRoute(double lat1, double lon1, double lat2, d
     }
 
     // reconstructing path from end to start
-    std::vector<std::pair<int,int>> path;
+    m_path.clear();
 
     int cx = endX;
     int cy = endY;
 
     while (!(cx == startX && cy == startY)) {
 
-        path.push_back({cx, cy});
+        float worldX = m_route_grid.origin_x + (cx + 0.5) * m_route_grid.cell_size_meters;
+        float worldY = m_route_grid.origin_y - (cy + 0.5) * m_route_grid.cell_size_meters;
+        float worldZ = m_route_grid.costs[cy * m_route_grid.width + cx].elevation;
+
+        m_path.emplace_back(worldX, worldY, worldZ * 1.49, 1.0f); //TODO figure out how the z coords work
 
         m_route_grid.costs[cy * m_route_grid.width + cx].selected = true;
 

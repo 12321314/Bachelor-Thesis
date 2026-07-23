@@ -34,7 +34,9 @@ public:
     void check_progress_and_emit_signals();
 
     std::unique_ptr<webgpu::raii::TextureWithSampler> m_texture;
-    CostGrid m_route_grid;
+    CostGrid m_route_grid; // the route path embedded into a cost grid
+    std::vector<glm::vec4> m_path; // the route path transformed to world coordinates as a vec4 so it can be directly used by the track renderer
+
     struct CompareCells {
         bool operator()(CostCell* a, CostCell* b) {
             return a->fCost > b->fCost;
