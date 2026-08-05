@@ -31,6 +31,7 @@ public:
     struct GPXTrackNodeSettings {
         std::string file_path = ":/gpx/breite_ries.gpx";
         bool enable_caching = true;
+        float region_padding = 1000.0f; // meters
     };
 
     GPXTrackNode();

@@ -49,7 +49,15 @@ void GPXTrackNode::run_impl()
     m_cached_path = m_settings.file_path;
     m_has_cached = true;
 
-    qDebug() << Qt::fixed << "gpx region=[(" << m_output_region.min.x << ", " << m_output_region.min.y << "), (" << m_output_region.max.x << ", "
+    double padding = m_settings.region_padding;
+
+    m_output_region.min.x -= padding / 2;
+    m_output_region.min.y -= padding / 2;
+
+    m_output_region.max.x += padding / 2;
+    m_output_region.max.y += padding / 2;
+
+    qInfo() << Qt::fixed << "gpx region=[(" << m_output_region.min.x << ", " << m_output_region.min.y << "), (" << m_output_region.max.x << ", "
              << m_output_region.max.y << ")]";
 
     complete_run();

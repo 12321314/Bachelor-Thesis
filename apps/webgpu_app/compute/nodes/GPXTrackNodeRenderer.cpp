@@ -55,6 +55,11 @@ void GPXTrackNodeRenderer::render_settings_content()
         m_node->set_settings(settings);
         m_node->rerun();
     }
+
+    if (ImGui::SliderFloat("Region Padding", &settings.region_padding, 0.0f, 5000.0f, "%.0f m")) {
+        m_node->set_settings(settings);
+        m_node->rerun();
+    }
 }
 
 void GPXTrackNodeRenderer::render_dialogs()

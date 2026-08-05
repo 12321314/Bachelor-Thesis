@@ -74,44 +74,57 @@ void CostSurfaceTextureNode::run_impl()
 
     if (m_settings.overlay_mode == "Cost")
     {
-        for (size_t i = 0; i < pixels.size(); i++)
+        for (size_t y = 0; y < grid->height; y++)
         {
-            float cost = grid->costs[i].cost;
-            float t = cost / 99.0f;
+            for (size_t x = 0; x < grid->width; x++)
+            {
+                float cost = grid->costs[y * grid->width + x].cost;
+                float t = cost / 99.0f;
 
-            unsigned char r, g, b;
+                unsigned char r, g, b, a;
 
-            if (t < 0.5f) {
+                a = 255;
 
-                // green to yellow
-                float k = t / 0.5f;
+                if (t < 0.5f) {
 
-                r = (unsigned char)(255 * k);
-                g = 255;
-                b = 0;
+                    // green to yellow
+                    float k = t / 0.5f;
 
-            } else {
+                    r = (unsigned char)(255 * k);
+                    g = 255;
+                    b = 0;
 
-                // yellow to red
-                float k = (t - 0.5f) / 0.5f;
+                } else {
 
-                r = 255;
-                g = (unsigned char)(255 * (1.0f - k));
-                b = 0;
+                    // yellow to red
+                    float k = (t - 0.5f) / 0.5f;
+
+                    r = 255;
+                    g = (unsigned char)(255 * (1.0f - k));
+                    b = 0;
+                }
+
+                // special case
+                if (cost == 99) {
+                    r = 0;
+                    g = 0;
+                    b = 0;
+                }
+
+                // this makes all cost 99 borders disappear
+                if (y == 0 || y == grid->height - 1 || x == 0 || x == grid->width - 1) {
+                    r = 0;
+                    g = 0;
+                    b = 0;
+                    a = 0;
+                }
+
+                pixels[y * grid->width + x] = glm::u8vec4(
+                    r,
+                    g,
+                    b,
+                    a);
             }
-
-            // special case
-            if (cost == 99) {
-                r = 0;
-                g = 0;
-                b = 0;
-            }
-
-            pixels[i] = glm::u8vec4(
-                r,
-                g,
-                b,
-                255);
         }
     }
     else if (m_settings.overlay_mode == "Paths")
