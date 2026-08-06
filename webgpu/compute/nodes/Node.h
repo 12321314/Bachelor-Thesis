@@ -26,7 +26,7 @@
 #include "../types/HeightGrid.h"
 #include "../types/Way.h"
 #include "radix/tile.h"
-
+#include "../types/HeightImage.h"
 
 #include <QByteArray>
 #include <QJsonObject>
@@ -50,11 +50,12 @@ using Data = std::variant<const std::vector<radix::tile::Id>*,
     const webgpu::raii::TextureWithSampler*,
     const radix::geometry::Aabb<2, double>*,
     const radix::geometry::Aabb<3, double>*,
-    const QImage*,
     const HeightGrid*,
     const std::vector<Way>*,
     const CostGrid*,
     const std::vector<float>*,
+    const HeightImage*,
+    const std::array<float, 2>*,
     const std::vector<glm::vec4>,
     glm::uvec2>;
 

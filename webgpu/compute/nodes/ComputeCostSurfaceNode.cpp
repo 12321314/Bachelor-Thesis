@@ -3,8 +3,7 @@
 #include "types/CostCell.h"
 #include "util.h"
 
-#include <QColor>
-#include <QImage>
+
 
 #include <QDebug>
 #include <QFileInfo>
@@ -251,61 +250,6 @@ void ComputeCostSurfaceNode::calculateCost() {
         }
     }
 
-    // special case for the edges of the overlay
-    // not sure if this is better than just setting all edges to 99
-    /*
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-            if (y == 0 || x == 0 || y == height - 1 || x == width - 1) {
-                float up = -1;
-                float down = -1;
-                float left = -1;
-                float right = -1;
-                if (y - 1 >= 0) {
-                    up = m_cost_grid.costs[(y - 1) * width + x].cost;
-                }
-                if (y + 1 < height) {
-                    down = m_cost_grid.costs[(y + 1) * width + x].cost;
-                }
-                if (x - 1 >= 0) {
-                    left = m_cost_grid.costs[y * width + x - 1].cost;
-                }
-                if (x + 1 < width) {
-                    right = m_cost_grid.costs[y * width + x + 1].cost;
-                }
-
-                float counter = 0;
-
-                if (up != -1 && up != 0) {
-                    counter++;
-                }
-                else {
-                    up = 0;
-                }
-                if (down != -1 && down != 0) {
-                    counter++;
-                }
-                else {
-                    down = 0;
-                }
-                if (left != -1 && left != 0) {
-                    counter++;
-                }
-                else {
-                    left = 0;
-                }
-                if (right != -1 && right != 0) {
-                    counter++;
-                }
-                else {
-                    right = 0;
-                }
-
-                m_cost_grid.costs[y * width + x].cost = (up + down + left + right) / counter;
-            }
-        }
-    }
-    */
 }
 
 void ComputeCostSurfaceNode::set_settings(const ComputeCostSurfaceNodeSettings& settings)

@@ -41,7 +41,7 @@ webgpu_compute::nodes::TileStitchNode::TileStitchNode(webgpu::Context& ctx, Stit
           },
           {
               OutputSocket(*this, "texture", data_type<const webgpu::raii::TextureWithSampler*>(), [this]() { return m_output_texture.get(); }),
-              OutputSocket(*this, "QImage", data_type<const QImage*>(), [this]() { return &m_output_image; }),
+              OutputSocket(*this, "height image", data_type<const HeightImage*>(), [this]() { return &m_output_image; }),
           })
     , m_ctx(&ctx)
     , m_settings(settings)
@@ -90,12 +90,11 @@ void TileStitchNode::run_impl()
         return;
     }
 
-    // Create QImage
-    m_output_image = QImage(
-        size_pixels.x,
-        size_pixels.y,
-        QImage::Format_RGBA8888
-    );
+    // Create HeightImage
+    m_output_image.width = size_pixels.x;
+    m_output_image.height = size_pixels.y;
+    m_output_image.pixels.resize(size_pixels.x * size_pixels.y * 4);
+
 
     // create output texture
     WGPUTextureDescriptor texture_desc {};
@@ -149,18 +148,15 @@ void TileStitchNode::run_impl()
 
                 const auto pixel = image.pixel(glm::uvec2(x, y));
 
-                QColor color(
-                    pixel.x,
-                    pixel.y,
-                    pixel.z,
-                    pixel.w
-                );
+                uint32_t dst_x = pos.x + x;
+                uint32_t dst_y = pos.y + y;
 
-                m_output_image.setPixelColor(
-                    pos.x + x,
-                    pos.y + y,
-                    color
-                );
+                size_t index = (dst_y * m_output_image.width + dst_x) * 4;
+
+                m_output_image.pixels[index + 0] = pixel.x;
+                m_output_image.pixels[index + 1] = pixel.y;
+                m_output_image.pixels[index + 2] = pixel.z;
+                m_output_image.pixels[index + 3] = pixel.w;
             }
         }
 

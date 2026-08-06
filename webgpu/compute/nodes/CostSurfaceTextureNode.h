@@ -10,7 +10,7 @@ class CostSurfaceTextureNode : public Node
     Q_OBJECT
 
 public:
-    NODE_TYPE_NAME(CreateCostSurfaceTextureNode)
+    NODE_TYPE_NAME(CostSurfaceTextureNode)
 
     struct CostSurfaceTextureNodeSettings
     {

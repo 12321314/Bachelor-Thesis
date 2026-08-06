@@ -2,8 +2,6 @@
 
 #include "CreateHeightGrid.h"
 #include "util.h"
-#include <QColor>
-#include <QImage>
 
 #include <QDebug>
 #include <QFileInfo>

@@ -19,8 +19,8 @@
 #pragma once
 
 #include "Node.h"
+#include "types/HeightImage.h"
 
-#include <QImage>
 #include <webgpu/base/Context.h>
 
 #define MAX_STITCHED_IMAGE_SIZE 8192
@@ -69,7 +69,7 @@ private:
     StitchSettings m_settings;
 
     std::unique_ptr<webgpu::raii::TextureWithSampler> m_output_texture;
-    QImage m_output_image;
+    HeightImage m_output_image;
 };
 
 } // namespace webgpu_compute::nodes

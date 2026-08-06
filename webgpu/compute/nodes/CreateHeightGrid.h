@@ -20,7 +20,7 @@ public:
     CreateHeightGrid();
     CreateHeightGrid(const CreateHeightGridSettings& settings);
 
-    float decode_height(const QColor& c);
+    float decode_height(const uint8_t* pixel);
 
     void set_settings(const CreateHeightGridSettings& settings);
     const CreateHeightGridSettings& get_settings() const { return m_settings; }

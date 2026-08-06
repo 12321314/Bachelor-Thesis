@@ -18,12 +18,12 @@
 
 #include "RequestTilesNode.h"
 #include "nucleus/srs.h"
+#include "stb_slim/stb_image.h"
 #include "util.h"
 
-#include <QColor>
+
 #include <QDebug>
 #include <QFileInfo>
-#include <QImage>
 #include <set>
 
 namespace webgpu_compute::nodes {
@@ -35,7 +35,7 @@ RequestTilesNode::RequestTilesNode(const RequestTilesNodeSettings& settings)
           },
           {
               OutputSocket(*this, "tile data", data_type<const std::vector<QByteArray>*>(), [this]() { return &m_received_tile_textures; }),
-              OutputSocket(*this, "tile dimension", data_type<const std::vector<float>*>(), [this]() { return &m_tile_dimension; }),
+              OutputSocket(*this, "tile dimension", data_type<const std::array<float, 2>*>(), [this]() { return &m_tile_dimension; }),
           })
 {
     set_settings(settings);
@@ -103,16 +103,28 @@ void RequestTilesNode::on_single_tile_received(const nucleus::tile::Data& tile)
     check_progress_and_emit_signals();
 
     // get tile dimension
-    if (m_tile_dimension[1] == 0.0f) {
-        QImage img;
+    int width;
+    int height;
+    int channels;
 
-        if (!img.loadFromData(*tile.data)) {
-            qWarning() << "failed to decode png";
-        }
+    stbi_uc* pixels = stbi_load_from_memory(
+        reinterpret_cast<const stbi_uc*>(tile.data->constData()),
+        tile.data->size(),
+        &width,
+        &height,
+        &channels,
+        4
+    );
 
-        m_tile_dimension[1] = img.width();
+    if (!pixels) {
+        fail_run("failed to decode png");
+        return;
     }
 
+    m_tile_dimension[1] = static_cast<float>(width);
+
+    qInfo() << "dimension:"
+             << m_tile_dimension[1];
 
     qInfo() << "size:"
              << tile.data->size();
@@ -120,38 +132,6 @@ void RequestTilesNode::on_single_tile_received(const nucleus::tile::Data& tile)
     qInfo() << "first bytes:"
              << tile.data->left(16).toHex();
 
-    QImage img;
-
-    if (!img.loadFromData(*tile.data)) {
-
-        qWarning() << "failed to decode png";
-
-    } else {
-
-        qInfo() << "image size:"
-                 << img.width()
-                 << "x"
-                 << img.height();
-
-        QColor c = img.pixelColor(0, 0);
-
-        qInfo()
-            << "first pixel:"
-            << c.red()
-            << c.green()
-            << c.blue();
-
-        QString filename =
-            QString("tile_%1_%2_%3.png")
-                .arg(tile.id.zoom_level)
-                .arg(tile.id.coords.x)
-                .arg(tile.id.coords.y);
-
-        //img.save(filename);
-
-        //qInfo() << "saved tile to" << QFileInfo(filename).absoluteFilePath();
-        //TODO delete this at the end
-    }
 }
 
 void RequestTilesNode::set_settings(const RequestTilesNodeSettings& settings)

@@ -55,6 +55,7 @@ set(SOURCES
         types/CostGrid.h
         nodes/CalculateRouteNode.cpp
         nodes/CalculateRouteNode.h
+        types/HeightImage.h
 )
 
 qt_add_library(webgpu_compute STATIC ${SOURCES})

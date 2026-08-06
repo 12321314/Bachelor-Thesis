@@ -3,9 +3,6 @@
 #include "types/Way.h"
 #include "util.h"
 
-#include <QColor>
-#include <QImage>
-
 #include <QDebug>
 #include <QFileInfo>
 #include <QNetworkAccessManager>

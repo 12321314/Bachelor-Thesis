@@ -1,9 +1,8 @@
 #include "CreateHeightGrid.h"
 #include "nucleus/srs.h"
+#include "types/HeightImage.h"
 #include "util.h"
 
-#include <QColor>
-#include <QImage>
 
 #include <QDebug>
 #include <QFileInfo>
@@ -14,8 +13,8 @@ namespace webgpu_compute::nodes {
 CreateHeightGrid::CreateHeightGrid(const CreateHeightGridSettings& settings)
 : Node(
       {
-          InputSocket(*this, "QImage", data_type<const QImage*>()),
-          InputSocket(*this, "tile dimension", data_type<const std::vector<float>*>()),
+          InputSocket(*this, "height image", data_type<const HeightImage*>()),
+          InputSocket(*this, "tile dimension", data_type<const std::array<float, 2>*>()),
           InputSocket(*this, "region aabb", data_type<const radix::geometry::Aabb<2,double>*>())
       },
       {
@@ -32,17 +31,12 @@ CreateHeightGrid::CreateHeightGrid()
 //TODO rename to CreateHeightGridNode
 void CreateHeightGrid::run_impl()
 {
-    const auto& image = *std::get<data_type<const QImage*>()>(input_socket("QImage").get_connected_data());
-    const auto& dimensions = *std::get<data_type<const std::vector<float>*>()>(input_socket("tile dimension").get_connected_data());
+    const auto& image = *std::get<data_type<const HeightImage*>()>(input_socket("height image").get_connected_data());
+    const auto& dimensions = *std::get<data_type<const std::array<float, 2>*>()>(input_socket("tile dimension").get_connected_data());
     const auto& region = std::get<data_type<const radix::geometry::Aabb<2,double>*>()>(input_socket("region aabb").get_connected_data());
 
-    if (image.isNull()) {
-        fail_run("invalid image");
-        return;
-    }
-
-    const int width = image.width();
-    const int height = image.height();
+    const int width = image.width;
+    const int height = image.height;
 
     qInfo() << "Creating height grid:" << width << "x" << height;
 
@@ -62,9 +56,9 @@ void CreateHeightGrid::run_impl()
 
         for (int x = 0; x < width; ++x) {
 
-            QColor c = image.pixelColor(x, y);
+            const uint8_t* pixel = &image.pixels[(y * width + x) * 4];
 
-            float h = decode_height(c);
+            float h = decode_height(pixel);
 
             m_height_grid.heights[y * width + x] = h;
         }
@@ -75,11 +69,9 @@ void CreateHeightGrid::run_impl()
     complete_run();
 }
 
-float CreateHeightGrid::decode_height(const QColor& c)
+float CreateHeightGrid::decode_height(const uint8_t* pixel)
 {
-    // from height_decode_compute.wgsl
-
-    uint16_t raw = (uint16_t(c.red()) << 8) | uint16_t(c.green());
+    uint16_t raw = (uint16_t(pixel[0]) << 8) | uint16_t(pixel[1]);
 
     constexpr float scaling_factor = 8191.875f / 65535.0f;
 
