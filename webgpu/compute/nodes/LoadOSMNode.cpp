@@ -31,6 +31,7 @@ LoadOSMNode::LoadOSMNode()
 void LoadOSMNode::run_impl()
 {
     const auto region_aabb = std::get<data_type<const radix::geometry::Aabb<2, double>*>()>(input_socket("region aabb").get_connected_data());
+    m_ways.clear();
 
     glm::dvec2 lat_lon_min = nucleus::srs::world_to_lat_long(region_aabb->min);
     glm::dvec2 lat_lon_max = nucleus::srs::world_to_lat_long(region_aabb->max);
@@ -51,21 +52,48 @@ void LoadOSMNode::run_impl()
     .arg(lat_lon_max.x)
     .arg(lat_lon_max.y);
 
-    QNetworkAccessManager* manager = new QNetworkAccessManager(this);
+    auto* manager = new QNetworkAccessManager(this);
 
-    QNetworkRequest req(
-        QUrl("https://overpass-api.de/api/interpreter"));
+    QNetworkRequest req(QUrl("https://overpass-api.de/api/interpreter"));
 
-    req.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    req.setHeader(QNetworkRequest::ContentTypeHeader,
+                  "application/x-www-form-urlencoded");
 
-    manager->post(req, query.toUtf8());
+    req.setRawHeader("User-Agent", "BachelorThesis/1.0");
+    req.setRawHeader("Accept", "application/json");
 
-    connect(manager,&QNetworkAccessManager::finished,this,&LoadOSMNode::parse_OSM);
+    QByteArray postData;
+    postData.append("data=");
+    postData.append(QUrl::toPercentEncoding(query));
 
-    complete_run();
+    connect(manager, &QNetworkAccessManager::finished,
+            this,
+            [this, manager](QNetworkReply* reply)
+    {
+        qDebug() << "HTTP:"
+                 << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
+
+        parse_OSM(reply);
+
+        reply->deleteLater();
+        manager->deleteLater();
+
+        complete_run();
+    });
+
+    manager->post(req, postData);
 }
 
+
 std::vector<Way> LoadOSMNode::parse_OSM(QNetworkReply* reply) {
+
+    // handling network errors
+    if (reply->error() != QNetworkReply::NoError) {
+        qDebug() << reply->errorString();
+        reply->deleteLater();
+        fail_run(reply->errorString().toStdString());
+        return m_ways;
+    }
 
     QByteArray data = reply->readAll();
 
@@ -120,6 +148,7 @@ std::vector<Way> LoadOSMNode::parse_OSM(QNetworkReply* reply) {
 
     return m_ways;
 }
+
 
 void LoadOSMNode::set_settings(const LoadOSMNodeSettings& settings)
 {

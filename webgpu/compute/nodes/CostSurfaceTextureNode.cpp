@@ -149,23 +149,32 @@ void CostSurfaceTextureNode::run_impl()
     }
     else if (m_settings.overlay_mode == "Cliffs")
     {
-        for (size_t i = 0; i < pixels.size(); i++)
+        for (size_t y = 0; y < grid->height; y++)
         {
-            float cost = grid->costs[i].cost;
+            for (size_t x = 0; x < grid->width; x++) {
+                float cost = grid->costs[y * grid->width + x].cost;
 
-            if (cost == 99) {
-                pixels[i] = glm::u8vec4(
-                255,
-                0,
-                0,
-                255);
-            }
-            else {
-                pixels[i] = glm::u8vec4(
-                0,
-                0,
-                0,
-                0);
+                if (cost == 99) {
+                    pixels[y * grid->width + x] = glm::u8vec4(
+                    255,
+                    0,
+                    0,
+                    255);
+                }
+                else if (y == 0 || y == grid->height - 1 || x == 0 || x == grid->width - 1) {
+                    pixels[y * grid->width + x] = glm::u8vec4(
+                    0,
+                    0,
+                    0,
+                    0);
+                }
+                else {
+                    pixels[y * grid->width + x] = glm::u8vec4(
+                    0,
+                    0,
+                    0,
+                    0);
+                }
             }
         }
     }
