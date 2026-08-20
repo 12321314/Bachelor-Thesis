@@ -18,7 +18,7 @@ CalculateRouteNode::CalculateRouteNode(webgpu::Context& ctx,const CalculateRoute
       },
       {
           OutputSocket(*this, "texture", data_type<const webgpu::raii::TextureWithSampler*>(), [this]() { return m_texture.get();}),
-          OutputSocket(*this, "route", data_type<const std::vector<glm::vec4>>(), [this]() { return m_path;}),
+          OutputSocket(*this, "route", data_type<const RouteInfo*>(), [this]() { return &m_route_info;}),
       })
       , m_ctx(&ctx)
       , m_settings(settings)
@@ -45,9 +45,25 @@ void CalculateRouteNode::run_impl()
     // Calculate the Route
     // -----------------------------
 
+    m_route_info.path.clear();
+    m_route_info.colors.clear();
+    m_route_info.points.clear();
+
     for (int i = 0; i < points.size(); i++) {
+        // set control points
+        glm::dvec2 lat_lon1 = glm::dvec2(points[i].first, points[i].second);
+        lat_lon1 = nucleus::srs::lat_long_to_world(lat_lon1);
+
+        int controlX = (int)((lat_lon1.x - m_route_grid.origin_x) / m_route_grid.cell_size_meters);
+        int controlY = (int)((m_route_grid.origin_y - lat_lon1.y) / m_route_grid.cell_size_meters);
+        float controlHeight = m_route_grid.costs[controlY * m_route_grid.width + controlX].elevation;
+
+        m_route_info.points.emplace_back(lat_lon1.x, lat_lon1.y, controlHeight * 1.49, 1.0f);
+
+        // route planning
         if (i + 1 < points.size()) {
             calculateRoute(points[i].first, points[i].second, points[i + 1].first, points[i + 1].second);
+            qInfo() << points[i].first << " from to " << points[i + 1].first;
         }
     }
 
@@ -153,17 +169,24 @@ void CalculateRouteNode::run_impl()
 
 void CalculateRouteNode::calculateRoute(double lat1, double lon1, double lat2, double lon2)
 {
+    for (auto& cell : m_route_grid.costs) {
+        cell.visited = false;
+        cell.gCost = std::numeric_limits<float>::max();
+        cell.hCost = 0.0f;
+        cell.fCost = std::numeric_limits<float>::max();
+        cell.parentX = -1;
+        cell.parentY = -1;
+    }
+
     glm::dvec2 lat_lon1 = glm::dvec2(lat1, lon1);
     glm::dvec2 lat_lon2 = glm::dvec2(lat2, lon2);
     lat_lon1 = nucleus::srs::lat_long_to_world(lat_lon1);
     lat_lon2 = nucleus::srs::lat_long_to_world(lat_lon2);
-    qInfo() << "lat:" << lat1 << "lon:" << lon1 << "worldX:" << lat_lon1.x << "worldY" << lat_lon1.y << "originX:" << m_route_grid.origin_x << "origin_y:" << m_route_grid.origin_y;
 
     int startX = (int)((lat_lon1.x - m_route_grid.origin_x) / m_route_grid.cell_size_meters);
     int startY = (int)((m_route_grid.origin_y - lat_lon1.y) / m_route_grid.cell_size_meters);
     int endX = (int)((lat_lon2.x - m_route_grid.origin_x) / m_route_grid.cell_size_meters);
     int endY = (int)((m_route_grid.origin_y - lat_lon2.y) / m_route_grid.cell_size_meters);
-    qInfo() << "startX:" << startX << "startY" << startY << "endX:" << endX << "endY" << endY;
 
     //mark control points
     m_route_grid.costs[startY * m_route_grid.width + startX].controlPoint = true;
@@ -251,18 +274,20 @@ void CalculateRouteNode::calculateRoute(double lat1, double lon1, double lat2, d
     }
 
     // reconstructing path from end to start
-    m_path.clear();
 
     int cx = endX;
     int cy = endY;
+
+    std::vector<glm::vec4> segment;
 
     while (!(cx == startX && cy == startY)) {
 
         float worldX = m_route_grid.origin_x + (cx + 0.5) * m_route_grid.cell_size_meters;
         float worldY = m_route_grid.origin_y - (cy + 0.5) * m_route_grid.cell_size_meters;
         float worldZ = m_route_grid.costs[cy * m_route_grid.width + cx].elevation;
+        segment.emplace_back(worldX, worldY, worldZ * 1.49, 1.0f); //TODO figure out how the z coords work
 
-        m_path.emplace_back(worldX, worldY, worldZ * 1.49, 1.0f); //TODO figure out how the z coords work
+        convertCostToColor(m_route_grid.costs[cy * m_route_grid.width + cx].cost);
 
         m_route_grid.costs[cy * m_route_grid.width + cx].selected = true;
 
@@ -277,6 +302,51 @@ void CalculateRouteNode::calculateRoute(double lat1, double lon1, double lat2, d
         cx = px;
         cy = py;
     }
+
+    std::reverse(segment.begin(), segment.end());
+
+    m_route_info.path.insert(
+    m_route_info.path.end(),
+    segment.begin(),
+    segment.end()
+    );
+}
+
+void CalculateRouteNode::convertCostToColor(float cost)
+{
+    float t = cost / 99.0f;
+
+    float r, g, b, a;
+
+    a = 255;
+
+    if (t < 0.5f) {
+
+        // green to yellow
+        float k = t / 0.5f;
+
+        r = (255 * k);
+        g = 255;
+        b = 0;
+
+    } else {
+
+        // yellow to red
+        float k = (t - 0.5f) / 0.5f;
+
+        r = 255;
+        g = (255 * (1.0f - k));
+        b = 0;
+    }
+
+    // special case
+    if (cost == 99) {
+        r = 0;
+        g = 0;
+        b = 0;
+    }
+
+    m_route_info.colors.emplace_back(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
 }
 
 float CalculateRouteNode::movementCost(CostCell& current, CostCell& neighbor, bool diagonal)

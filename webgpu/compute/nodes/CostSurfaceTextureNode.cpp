@@ -178,6 +178,10 @@ void CostSurfaceTextureNode::run_impl()
             }
         }
     }
+    else if (m_settings.overlay_mode == "Nothing")
+    {
+
+    }
 
     // -----------------------------
     // Upload to GPU

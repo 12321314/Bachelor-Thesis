@@ -14,6 +14,7 @@ CostSurfaceTextureNodeRenderer::CostSurfaceTextureNodeRenderer(
           { "Cost Surface", { "Cost" } },
           { "Paths", { "Paths" } },
           { "Dangerous Cliffs", { "Cliffs" } },
+          { "No Overlay", { "Nothing" } },
       })
 {
 }

@@ -25,6 +25,7 @@ public:
 
     void calculateRoute(double lat1, double lon1, double lat2, double lon2);
     float movementCost(CostCell& current, CostCell& neighbor, bool diagonal);
+    void convertCostToColor(float cost);
 
     void set_settings(const CalculateRouteNodeSettings& settings);
     const CalculateRouteNodeSettings& get_settings() const { return m_settings; }
@@ -35,7 +36,7 @@ public:
 
     std::unique_ptr<webgpu::raii::TextureWithSampler> m_texture;
     CostGrid m_route_grid; // the route path embedded into a cost grid
-    std::vector<glm::vec4> m_path; // the route path transformed to world coordinates as a vec4 so it can be directly used by the track renderer
+    RouteInfo m_route_info;
 
     struct CompareCells {
         bool operator()(CostCell* a, CostCell* b) {

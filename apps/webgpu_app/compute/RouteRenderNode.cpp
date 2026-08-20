@@ -1,11 +1,13 @@
 #include "RouteRenderNode.h"
 
 #include "nucleus/srs.h"
+#include "webgpu/compute/types/RouteInfo.h"
+
 #include <QDebug>
-#include <webgpu/webgpu.h>
 #include <webgpu/engine/Context.h>
 #include <webgpu/engine/overlay/OverlayRenderer.h>
 #include <webgpu/engine/overlay/TextureOverlay.h>
+#include <webgpu/webgpu.h>
 
 namespace webgpu_compute::nodes {
 
@@ -16,7 +18,7 @@ RouteRenderNode::RouteRenderNode(webgpu_engine::Context& context)
 
 RouteRenderNode::RouteRenderNode(webgpu_engine::Context& context, const RouteRenderNodeSettings& settings)
     : Node({
-        InputSocket(*this, "route", data_type<const std::vector<glm::vec4>>() ),
+        InputSocket(*this, "route", data_type<const RouteInfo*>()),
                          },
           {})
     , m_context(&context)
@@ -32,11 +34,11 @@ RouteRenderNode::~RouteRenderNode()
 void RouteRenderNode::run_impl()
 {
 
-    std::vector<glm::vec4> route = std::get<data_type<const std::vector<glm::vec4>>()>(input_socket("route").get_connected_data());
+    const RouteInfo* routeInfo = std::get<data_type<const RouteInfo*>()>(input_socket("route").get_connected_data());
 
-    glm::vec4 color = {255, 0, 0, 1};
 
-    m_context->track_renderer()->add_world_positions(route, color);
+    m_context->track_renderer()->add_world_positions_with_colored_segments(routeInfo->path, routeInfo->colors);
+    m_context->track_renderer()->add_world_positions_for_control_points(routeInfo->points);
     m_context->request_redraw();
 
     complete_run();

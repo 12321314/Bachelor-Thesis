@@ -152,6 +152,37 @@ void TrackRenderer::add_world_positions(const std::vector<glm::vec4>& world_posi
             m_position_buffers.back()->create_bind_group_entry(0), m_line_config_buffers.back()->raw_buffer().create_bind_group_entry(1) }));
 }
 
+void TrackRenderer::add_world_positions_with_colored_segments(const std::vector<glm::vec4>& world_positions, const std::vector<glm::vec4>& colors)
+{
+    for (size_t i = 0; i + 1 < world_positions.size(); i++) {
+        std::vector<glm::vec4> segment = { world_positions[i], world_positions[i + 1] };
+
+        add_world_positions(segment, colors[i]);
+    }
+}
+
+void TrackRenderer::add_world_positions_for_control_points(const std::vector<glm::vec4>& points)
+{
+    const float size = 20.0f;
+
+    for (size_t i = 0; i < points.size(); i++) {
+        const glm::vec4& point = points[i];
+
+        std::vector<glm::vec4> segment1 = {
+            point + glm::vec4(-size, 0.0f, 0.0f, 0.0f),
+            point + glm::vec4( size, 0.0f, 0.0f, 0.0f)
+        };
+
+        std::vector<glm::vec4> segment2 = {
+            point + glm::vec4(0.0f, -size, 0.0f, 0.0f),
+            point + glm::vec4(0.0f,  size, 0.0f, 0.0f)
+        };
+
+        add_world_positions(segment1, {0.0, 0.0, 1.0, 1.0});
+        add_world_positions(segment2, {0.0, 0.0, 1.0, 1.0});
+    }
+}
+
 void TrackRenderer::render(WGPUCommandEncoder command_encoder,
     const webgpu::raii::BindGroup& shared_config,
     const webgpu::raii::BindGroup& camera_config,

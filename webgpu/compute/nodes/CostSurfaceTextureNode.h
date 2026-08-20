@@ -14,7 +14,7 @@ public:
 
     struct CostSurfaceTextureNodeSettings
     {
-        std::string overlay_mode = "Cost"; // can be Cost, Paths, or Cliffs
+        std::string overlay_mode = "Cost"; // can be Cost, Paths, Cliffs or Nothing
 
         WGPUTextureFormat format = WGPUTextureFormat_RGBA8Unorm;
         WGPUTextureUsage usage =
