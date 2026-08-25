@@ -59,6 +59,8 @@ set(SOURCES
         compute/nodes/CostSurfaceTextureNodeRenderer.h
         compute/RouteRenderNode.cpp
         compute/RouteRenderNode.h
+        util/MousePicker.cpp
+        util/MousePicker.h
 )
 
 if (ALP_WEBGPU_APP_ENABLE_COMPUTE)

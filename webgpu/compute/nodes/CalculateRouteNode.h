@@ -37,6 +37,7 @@ public:
     std::unique_ptr<webgpu::raii::TextureWithSampler> m_texture;
     CostGrid m_route_grid; // the route path embedded into a cost grid
     RouteInfo m_route_info;
+    const double pi = 3.1415926535897932384626433;
 
     struct CompareCells {
         bool operator()(CostCell* a, CostCell* b) {

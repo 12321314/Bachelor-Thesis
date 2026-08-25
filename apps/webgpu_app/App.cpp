@@ -291,6 +291,12 @@ void App::start()
 
     m_input_mapper = std::make_unique<InputMapper>(this, m_camera_controller.get(), m_gui_manager.get(), [this]() { return m_viewport_size; });
 
+    // set up mouse picker
+    m_context->mouse_picker()->set_input_mapper(m_input_mapper.get());
+    m_context->mouse_picker()->set_depth_tester(m_webgpu_window.get()->depth_tester());
+    m_context->mouse_picker()->set_camera(&m_camera_controller->definition());
+    m_context->mouse_picker()->connect_mouse_picker();
+
     // TODO connect this (is used from ImGuiManager to update camera when settings are changed)
     //  connect(this, &App::update_camera_requested, camera_controller, &nucleus::camera::Controller::update_camera_request);
     connect(m_webgpu_window.get(),

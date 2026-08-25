@@ -25,9 +25,10 @@
 #include "../types/CostGrid.h"
 #include "../types/HeightGrid.h"
 #include "../types/HeightImage.h"
-#include "../types/Way.h"
-#include "radix/tile.h"
 #include "../types/RouteInfo.h"
+#include "../types/Way.h"
+#include "nucleus/track/GPX.h"
+#include "radix/tile.h"
 
 #include <QByteArray>
 #include <QJsonObject>
@@ -59,6 +60,7 @@ using Data = std::variant<const std::vector<radix::tile::Id>*,
     const std::array<float, 2>*,
     const std::vector<glm::vec4>,
     const RouteInfo*,
+    const nucleus::track::Segment*,
     glm::uvec2>;
 
 using SocketIndex = size_t;

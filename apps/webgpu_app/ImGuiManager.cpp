@@ -102,7 +102,7 @@ void ImGuiManager::init(
     m_panels.push_back(std::make_unique<CloudPanel>(engine_ctx, rc->clouds_manager(), engine_ctx->cloud_renderer()));
     m_panels.push_back(std::make_unique<AtmospherePanel>(engine_ctx));
     m_panels.push_back(std::make_unique<ShadingPanel>(engine_ctx));
-    m_panels.push_back(std::make_unique<TrackPanel>(engine_ctx, m_terrain_renderer));
+    m_panels.push_back(std::make_unique<TrackPanel>(engine_ctx, m_terrain_renderer, rc->mouse_picker()));
 #ifdef ALP_WEBGPU_APP_ENABLE_COMPUTE
     m_panels.push_back(std::make_unique<NodeGraphPanel>(engine_ctx));
 #endif

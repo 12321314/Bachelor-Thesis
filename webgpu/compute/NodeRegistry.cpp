@@ -29,6 +29,7 @@
 #include "nodes/CreateHeightGrid.h"
 #include "nodes/ExportNode.h"
 #include "nodes/GPXTrackNode.h"
+#include "nodes/GPXPickedTrackNode.h"
 #include "nodes/HeightDecodeNode.h"
 #include "nodes/IterativeSimulationNode.h"
 #include "nodes/LoadOSMNode.h"
@@ -47,6 +48,7 @@ NodeRegistry::NodeRegistry()
 {
     // ToDo: Make sure all nodes share the same constructor and create Makro for register process
     register_node("GPXTrackNode", [](webgpu::Context&) { return std::make_unique<nodes::GPXTrackNode>(); });
+    register_node("GPXPickedTrackNode", [](webgpu::Context&) { return std::make_unique<nodes::GPXPickedTrackNode>(); });
     register_node("SelectTilesNode", [](webgpu::Context&) { return std::make_unique<nodes::SelectTilesNode>(); });
     register_node("RequestTilesNode", [](webgpu::Context&) { return std::make_unique<nodes::RequestTilesNode>(); });
     register_node("ComputeNormalsNode", [](webgpu::Context& c) { return std::make_unique<nodes::ComputeNormalsNode>(c); });

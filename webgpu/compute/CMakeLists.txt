@@ -57,6 +57,8 @@ set(SOURCES
         nodes/CalculateRouteNode.h
         types/HeightImage.h
         types/RouteInfo.h
+        nodes/GPXPickedTrackNode.cpp
+        nodes/GPXPickedTrackNode.h
 )
 
 qt_add_library(webgpu_compute STATIC ${SOURCES})

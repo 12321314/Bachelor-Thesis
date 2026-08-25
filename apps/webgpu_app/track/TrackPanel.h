@@ -19,6 +19,8 @@
 #pragma once
 
 #include "ui/ImGuiPanel.h"
+#include "util/MousePicker.h"
+
 #include <string>
 
 namespace webgpu_engine {
@@ -32,7 +34,7 @@ class App;
 
 class TrackPanel : public ImGuiPanel {
 public:
-    TrackPanel(webgpu_engine::Context* context, App* terrain_renderer);
+    TrackPanel(webgpu_engine::Context* context, App* terrain_renderer, MousePicker* mouse_picker);
     void ready() override;
     void draw_panel() override;
 
@@ -44,7 +46,9 @@ private:
     App* m_terrain_renderer = nullptr;
     webgpu_engine::TrackRenderer* m_track_renderer = nullptr;
     std::string m_last_dialog_directory = ".";
+    MousePicker* m_mouse_picker = nullptr;
     std::vector<std::string> m_picked_files;
+    bool m_picking_enabled = false;
 };
 
 } // namespace webgpu_app

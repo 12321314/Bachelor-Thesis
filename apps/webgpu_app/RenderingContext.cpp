@@ -26,6 +26,7 @@
 #include "nucleus/tile/Texture3DScheduler.h"
 #include "nucleus/tile/TileLoadService.h"
 #include "nucleus/tile/setup.h"
+#include "util/MousePicker.h"
 #include "webgpu/engine/Context.h"
 #include "webgpu/engine/cloud/CloudRenderer.h"
 #include "webgpu/engine/overlay/HeightLinesOverlay.h"
@@ -117,6 +118,8 @@ RenderingContext::RenderingContext()
     });
 
     m_search_service = std::make_unique<SearchService>();
+
+    m_mouse_picker = std::make_unique<MousePicker>();
 }
 
 void RenderingContext::initialize(webgpu::Context& ctx)
@@ -233,5 +236,7 @@ nucleus::tile::TileLoadService* RenderingContext::cloud_tile_load_service() { re
 clouds::Manager* RenderingContext::clouds_manager() { return m_clous_manager.get(); }
 
 SearchService* RenderingContext::search_service() { return m_search_service.get(); }
+
+MousePicker* RenderingContext::mouse_picker() { return m_mouse_picker.get(); }
 
 } // namespace webgpu_app

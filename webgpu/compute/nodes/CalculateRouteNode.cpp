@@ -15,6 +15,7 @@ CalculateRouteNode::CalculateRouteNode(webgpu::Context& ctx,const CalculateRoute
 : Node(
       {
           InputSocket(*this, "cost grid", data_type<const CostGrid*>()),
+          InputSocket(*this, "points", data_type<const nucleus::track::Segment*>()),
       },
       {
           OutputSocket(*this, "texture", data_type<const webgpu::raii::TextureWithSampler*>(), [this]() { return m_texture.get();}),
@@ -29,11 +30,7 @@ CalculateRouteNode::CalculateRouteNode(webgpu::Context& ctx,const CalculateRoute
 void CalculateRouteNode::run_impl()
 {
     const auto cost_grid = std::get<data_type<const CostGrid*>()>(input_socket("cost grid").get_connected_data());
-    std::vector<std::pair<double, double>> points = {
-        {47.778737, 15.824605},
-        {47.776979, 15.814548},
-        {47.774417, 15.809530}
-    };
+    const auto points = std::get<data_type<const nucleus::track::Segment*>()>(input_socket("points").get_connected_data());
     m_route_grid.width = cost_grid->width;
     m_route_grid.height = cost_grid->height;
     m_route_grid.cell_size_meters = cost_grid->cell_size_meters;
@@ -49,21 +46,21 @@ void CalculateRouteNode::run_impl()
     m_route_info.colors.clear();
     m_route_info.points.clear();
 
-    for (int i = 0; i < points.size(); i++) {
+    for (int i = 0; i < points->size(); i++) {
         // set control points
-        glm::dvec2 lat_lon1 = glm::dvec2(points[i].first, points[i].second);
+        glm::dvec2 lat_lon1 = glm::dvec2(points->at(i).latitude, points->at(i).longitude);
         lat_lon1 = nucleus::srs::lat_long_to_world(lat_lon1);
 
         int controlX = (int)((lat_lon1.x - m_route_grid.origin_x) / m_route_grid.cell_size_meters);
         int controlY = (int)((m_route_grid.origin_y - lat_lon1.y) / m_route_grid.cell_size_meters);
         float controlHeight = m_route_grid.costs[controlY * m_route_grid.width + controlX].elevation;
 
-        m_route_info.points.emplace_back(lat_lon1.x, lat_lon1.y, controlHeight * 1.49, 1.0f);
+        m_route_info.points.emplace_back(lat_lon1.x, lat_lon1.y, controlHeight * (1 / cos(points->at(i).latitude * pi / 180)), 1.0f);
 
         // route planning
-        if (i + 1 < points.size()) {
-            calculateRoute(points[i].first, points[i].second, points[i + 1].first, points[i + 1].second);
-            qInfo() << points[i].first << " from to " << points[i + 1].first;
+        if (i + 1 < points->size()) {
+            calculateRoute(points->at(i).latitude, points->at(i).longitude, points->at(i + 1).latitude, points->at(i + 1).longitude);
+            qInfo() << points->at(i).latitude << " from to " << points->at(i).longitude;
         }
     }
 
@@ -285,7 +282,11 @@ void CalculateRouteNode::calculateRoute(double lat1, double lon1, double lat2, d
         float worldX = m_route_grid.origin_x + (cx + 0.5) * m_route_grid.cell_size_meters;
         float worldY = m_route_grid.origin_y - (cy + 0.5) * m_route_grid.cell_size_meters;
         float worldZ = m_route_grid.costs[cy * m_route_grid.width + cx].elevation;
-        segment.emplace_back(worldX, worldY, worldZ * 1.49, 1.0f); //TODO figure out how the z coords work
+
+        glm::dvec2 lat_lon = glm::dvec2(worldX, worldY);
+        lat_lon = nucleus::srs::world_to_lat_long(lat_lon);
+
+        segment.emplace_back(worldX, worldY, worldZ * (1 / cos(lat_lon.x * pi / 180)), 1.0f);
 
         convertCostToColor(m_route_grid.costs[cy * m_route_grid.width + cx].cost);
 

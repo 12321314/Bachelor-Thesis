@@ -27,6 +27,7 @@
 #include "cloud/CloudsManager.h"
 #include "nucleus/tile/SchedulerDirector.h"
 #include "nucleus/tile/setup.h"
+#include "util/MousePicker.h"
 #include "util/SearchService.h"
 #include "webgpu/webgpu.h"
 
@@ -75,6 +76,7 @@ public:
     nucleus::tile::TileLoadService* cloud_tile_load_service();
     clouds::Manager* clouds_manager();
     SearchService* search_service();
+    MousePicker* mouse_picker();
 
 signals:
     void initialised();
@@ -90,6 +92,7 @@ private:
     std::unique_ptr<nucleus::tile::SchedulerDirector> m_scheduler_director;
     std::unique_ptr<clouds::Manager> m_clous_manager;
     std::unique_ptr<SearchService> m_search_service;
+    std::unique_ptr<MousePicker> m_mouse_picker;
 
     std::unique_ptr<QThread> m_scheduler_thread;
 };

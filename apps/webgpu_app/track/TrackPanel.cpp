@@ -32,10 +32,11 @@
 
 namespace webgpu_app {
 
-TrackPanel::TrackPanel(webgpu_engine::Context* context, App* terrain_renderer)
+TrackPanel::TrackPanel(webgpu_engine::Context* context, App* terrain_renderer, MousePicker* mouse_picker)
     : m_context(context)
     , m_terrain_renderer(terrain_renderer)
     , m_track_renderer(context->track_renderer())
+    , m_mouse_picker(mouse_picker)
 {
 }
 
@@ -79,6 +80,20 @@ void TrackPanel::draw_panel()
         const char* items = "none\0without depth test\0with depth test\0semi-transparent\0";
         if (ImGui::Combo("Line render mode", (int*)&(m_context->shared_config().m_track_render_mode), items)) {
             m_context->request_redraw();
+        }
+
+        if (ImGui::Button(
+        m_mouse_picker->enabled() ? "Disable Picking" : "Enable Picking",
+        ImVec2(125, 0))) {
+
+            m_mouse_picker->set_enabled(!m_mouse_picker->enabled());
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("Clear Points", ImVec2(125, 0))) {
+
+            m_mouse_picker->clear_gpx();
         }
     }
 }
