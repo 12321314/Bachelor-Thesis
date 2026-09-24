@@ -1,6 +1,6 @@
 #include "ComputeCostSurfaceNode.h"
 #include "nucleus/srs.h"
-#include "types/CostCell.h"
+#include "../types/CostCell.h"
 #include "util.h"
 
 
@@ -61,7 +61,9 @@ void ComputeCostSurfaceNode::run_impl()
             cell.waterbody = false;
             cell.slope = 0;
             cell.cost = 0;
-            cell.selected = false;
+            cell.selected_one = false;
+            cell.selected_two = false;
+            cell.selected_three = false;
             cell.x = x;
             cell.y = y;
 
@@ -218,20 +220,21 @@ void ComputeCostSurfaceNode::calculateCost() {
             else {
                 CostCell cell = m_cost_grid.costs[y * width + x];
                 if (cell.forest) {
-                    cost = 20 + cell.slope * 1.5;
+                    cost = 20 * (m_settings.m_forest_influence / 10) + cell.slope * 1.5;
                 }
                 else {
                     cost = cell.slope * 1.5;
                 }
 
-                if (cell.river && cell.path) {
-                    cost -= 10;
+                if (cell.river && !cell.path) {
+                    cost += 20 * (m_settings.m_river_influence / 10);
                 }
-                else if (cell.stream && cell.path) {
-                    cost -= 20;
+                else if (cell.stream && !cell.path) {
+                    cost += 10 * (m_settings.m_stream_influence / 10);
                 }
-                else if (cell.path) {
-                    cost -= 30;
+
+                if (cell.path) {
+                    cost -= 30 * (m_settings.m_path_influence / 10);
                 }
 
                 if (cell.waterbody && !cell.stream && !cell.river) {
@@ -247,6 +250,7 @@ void ComputeCostSurfaceNode::calculateCost() {
             }
 
             m_cost_grid.costs[y * width + x].cost = cost;
+            m_cost_grid.costs[y * width + x].simulated_cost = cost;
         }
     }
 

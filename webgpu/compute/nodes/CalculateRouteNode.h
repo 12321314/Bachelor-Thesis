@@ -14,6 +14,7 @@ public:
 
     struct CalculateRouteNodeSettings
     {
+        uint32_t number_of_routes = 1;
         WGPUTextureFormat format = WGPUTextureFormat_RGBA8Unorm;
         WGPUTextureUsage usage =
             WGPUTextureUsage_TextureBinding |
@@ -25,7 +26,7 @@ public:
 
     void calculateRoute(double lat1, double lon1, double lat2, double lon2);
     float movementCost(CostCell& current, CostCell& neighbor, bool diagonal);
-    void convertCostToColor(float cost);
+    glm::vec4 convertCostToColor(float cost);
 
     void set_settings(const CalculateRouteNodeSettings& settings);
     const CalculateRouteNodeSettings& get_settings() const { return m_settings; }
@@ -38,6 +39,7 @@ public:
     CostGrid m_route_grid; // the route path embedded into a cost grid
     RouteInfo m_route_info;
     const double pi = 3.1415926535897932384626433;
+    uint32_t m_route_number;
 
     struct CompareCells {
         bool operator()(CostCell* a, CostCell* b) {

@@ -73,7 +73,7 @@ void MousePicker::mouse_press(const nucleus::event_parameter::Mouse& event)
 
     emit point_picked(world_position);
 
-    m_picked_points.push_back(world_position);
+    m_picked_points.push_back(glm::dvec4{world_position.x, world_position.y, world_position.z, 1.0});
 
     qInfo() << "picked position: " << world_position.x << ", " << world_position.y << ", " << world_position.z;
 
@@ -133,6 +133,11 @@ void MousePicker::save_gpx()
     out << "</gpx>\n";
 
     file.close();
+}
+
+std::vector<glm::vec4> MousePicker::getPoints()
+{
+    return m_picked_points;
 }
 
 void MousePicker::clear_gpx()

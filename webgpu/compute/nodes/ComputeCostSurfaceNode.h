@@ -2,7 +2,6 @@
 #pragma once
 
 #include "Node.h"
-#include "types/CostCell.h"
 
 namespace webgpu_compute::nodes {
 
@@ -13,7 +12,10 @@ public:
     NODE_TYPE_NAME(ComputeCostSurfaceNode)
 
     struct ComputeCostSurfaceNodeSettings {
-
+        uint32_t m_forest_influence = 10;
+        uint32_t m_path_influence = 10;
+        uint32_t m_stream_influence = 10;
+        uint32_t m_river_influence = 10;
     };
 
     ComputeCostSurfaceNode();

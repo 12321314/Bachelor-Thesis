@@ -183,6 +183,13 @@ void TrackRenderer::add_world_positions_for_control_points(const std::vector<glm
     }
 }
 
+void TrackRenderer::clear_tracks()
+{
+    m_position_buffers.clear();
+    m_line_config_buffers.clear();
+    m_bind_groups.clear();
+}
+
 void TrackRenderer::render(WGPUCommandEncoder command_encoder,
     const webgpu::raii::BindGroup& shared_config,
     const webgpu::raii::BindGroup& camera_config,

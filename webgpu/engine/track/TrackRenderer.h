@@ -57,6 +57,7 @@ public:
     void add_world_positions(const std::vector<glm::vec4>& world_positions, const glm::vec4& color = { 1.0f, 0.0f, 0.0f, 1.0f });
     void add_world_positions_with_colored_segments(const std::vector<glm::vec4>& world_positions, const std::vector<glm::vec4>& colors);
     void add_world_positions_for_control_points(const std::vector<glm::vec4>& points);
+    void clear_tracks();
 
     void render(WGPUCommandEncoder command_encoder,
         const webgpu::raii::BindGroup& shared_config,

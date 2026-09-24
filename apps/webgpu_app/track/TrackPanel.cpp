@@ -95,6 +95,13 @@ void TrackPanel::draw_panel()
 
             m_mouse_picker->clear_gpx();
         }
+
+        if (ImGui::Button("Render Points", ImVec2(258, 0))) {
+
+            m_track_renderer->clear_tracks();
+            m_track_renderer->add_world_positions_for_control_points(m_mouse_picker->getPoints());
+            m_context->request_redraw();
+        }
     }
 }
 

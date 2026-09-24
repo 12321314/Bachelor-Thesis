@@ -42,12 +42,17 @@ void CalculateRouteNode::run_impl()
     // Calculate the Route
     // -----------------------------
 
-    m_route_info.path.clear();
-    m_route_info.colors.clear();
+    m_route_info.path_one.clear();
+    m_route_info.path_two.clear();
+    m_route_info.path_three.clear();
+    m_route_info.colors_one.clear();
+    m_route_info.colors_two.clear();
+    m_route_info.colors_three.clear();
     m_route_info.points.clear();
+    m_route_number = 0;
 
+    // set control points
     for (int i = 0; i < points->size(); i++) {
-        // set control points
         glm::dvec2 lat_lon1 = glm::dvec2(points->at(i).latitude, points->at(i).longitude);
         lat_lon1 = nucleus::srs::lat_long_to_world(lat_lon1);
 
@@ -56,12 +61,19 @@ void CalculateRouteNode::run_impl()
         float controlHeight = m_route_grid.costs[controlY * m_route_grid.width + controlX].elevation;
 
         m_route_info.points.emplace_back(lat_lon1.x, lat_lon1.y, controlHeight * (1 / cos(points->at(i).latitude * pi / 180)), 1.0f);
+    }
 
-        // route planning
-        if (i + 1 < points->size()) {
-            calculateRoute(points->at(i).latitude, points->at(i).longitude, points->at(i + 1).latitude, points->at(i + 1).longitude);
-            qInfo() << points->at(i).latitude << " from to " << points->at(i).longitude;
+    // route planning
+    while (m_route_number < m_settings.number_of_routes) {
+        for (int i = 0; i < points->size(); i++) {
+
+            if (i + 1 < points->size()) {
+                calculateRoute(points->at(i).latitude, points->at(i).longitude, points->at(i + 1).latitude, points->at(i + 1).longitude);
+                qInfo() << points->at(i).latitude << " from to " << points->at(i).longitude;
+                qInfo() << "route: " << m_route_number;
+            }
         }
+        m_route_number++;
     }
 
     // -----------------------------
@@ -103,8 +115,11 @@ void CalculateRouteNode::run_impl()
 
     for (size_t i = 0; i < pixels.size(); i++)
     {
-        float selected = m_route_grid.costs[i].selected;
+        float selected_one = m_route_grid.costs[i].selected_one;
+        float selected_two = m_route_grid.costs[i].selected_two;
+        float selected_three = m_route_grid.costs[i].selected_three;
         float control_point = m_route_grid.costs[i].controlPoint;
+        glm::vec4 color = convertCostToColor(m_route_grid.costs[i].cost);
 
         if (control_point) {
 
@@ -114,13 +129,29 @@ void CalculateRouteNode::run_impl()
              255,
              255);
 
-        } else if (selected) {
+        } else if (selected_one) {
 
             pixels[i] = glm::u8vec4(
-             255,
-             0,
-             0,
+             color.x,
+             color.y,
+             color.z,
              255);
+
+        } else if (selected_two) {
+
+            pixels[i] = glm::u8vec4(
+             color.x,
+             color.y,
+             color.z,
+             100);
+
+        } else if (selected_three) {
+
+            pixels[i] = glm::u8vec4(
+             color.x,
+             color.y,
+             color.z,
+             100);
 
         } else {
 
@@ -173,6 +204,14 @@ void CalculateRouteNode::calculateRoute(double lat1, double lon1, double lat2, d
         cell.fCost = std::numeric_limits<float>::max();
         cell.parentX = -1;
         cell.parentY = -1;
+
+        //apply route penalty
+        if ((m_route_number == 1 && cell.selected_one) || (m_route_number == 2 && cell.selected_two)) {
+            cell.simulated_cost = cell.simulated_cost * 1.5;
+            if (cell.simulated_cost > 99) {
+                cell.simulated_cost = 99;
+            }
+        }
     }
 
     glm::dvec2 lat_lon1 = glm::dvec2(lat1, lon1);
@@ -205,7 +244,7 @@ void CalculateRouteNode::calculateRoute(double lat1, double lon1, double lat2, d
 
         CostCell* currentCell = &m_route_grid.costs[current->y * m_route_grid.width + current->x];
 
-        if (currentCell->cost == 99) {
+        if (currentCell->simulated_cost == 99) {
             // cannot access this cell
             currentCell->visited = true;
             continue;
@@ -288,9 +327,20 @@ void CalculateRouteNode::calculateRoute(double lat1, double lon1, double lat2, d
 
         segment.emplace_back(worldX, worldY, worldZ * (1 / cos(lat_lon.x * pi / 180)), 1.0f);
 
-        convertCostToColor(m_route_grid.costs[cy * m_route_grid.width + cx].cost);
+        glm::vec4 color = convertCostToColor(m_route_grid.costs[cy * m_route_grid.width + cx].cost);
 
-        m_route_grid.costs[cy * m_route_grid.width + cx].selected = true;
+        if (m_route_number == 0) {
+            m_route_grid.costs[cy * m_route_grid.width + cx].selected_one = true;
+            m_route_info.colors_one.emplace_back(color.x / 255.0f, color.y / 255.0f, color.z / 255.0f, color.w / 255.0f);
+        }
+        if (m_route_number == 1) {
+            m_route_grid.costs[cy * m_route_grid.width + cx].selected_two = true;
+            m_route_info.colors_two.emplace_back(color.x / 255.0f, color.y / 255.0f, color.z / 255.0f, color.w / 255.0f);
+        }
+        if (m_route_number == 2) {
+            m_route_grid.costs[cy * m_route_grid.width + cx].selected_three = true;
+            m_route_info.colors_three.emplace_back(color.x / 255.0f, color.y / 255.0f, color.z / 255.0f, color.w / 255.0f);
+        }
 
         CostCell& c = m_route_grid.costs[cy * m_route_grid.width + cx];
 
@@ -306,14 +356,18 @@ void CalculateRouteNode::calculateRoute(double lat1, double lon1, double lat2, d
 
     std::reverse(segment.begin(), segment.end());
 
-    m_route_info.path.insert(
-    m_route_info.path.end(),
-    segment.begin(),
-    segment.end()
-    );
+    if (m_route_number == 0) {
+        m_route_info.path_one.insert(m_route_info.path_one.end(), segment.begin(), segment.end());
+    }
+    if (m_route_number == 1) {
+        m_route_info.path_two.insert(m_route_info.path_two.end(), segment.begin(), segment.end());
+    }
+    if (m_route_number == 2) {
+        m_route_info.path_three.insert(m_route_info.path_three.end(), segment.begin(), segment.end());
+    }
 }
 
-void CalculateRouteNode::convertCostToColor(float cost)
+glm::vec4 CalculateRouteNode::convertCostToColor(float cost)
 {
     float t = cost / 99.0f;
 
@@ -321,10 +375,10 @@ void CalculateRouteNode::convertCostToColor(float cost)
 
     a = 255;
 
-    if (t < 0.5f) {
+    if (t < 0.3f) {
 
         // green to yellow
-        float k = t / 0.5f;
+        float k = t / 0.3f;
 
         r = (255 * k);
         g = 255;
@@ -333,7 +387,7 @@ void CalculateRouteNode::convertCostToColor(float cost)
     } else {
 
         // yellow to red
-        float k = (t - 0.5f) / 0.5f;
+        float k = (t - 0.3f) / 0.7f;
 
         r = 255;
         g = (255 * (1.0f - k));
@@ -347,7 +401,9 @@ void CalculateRouteNode::convertCostToColor(float cost)
         b = 0;
     }
 
-    m_route_info.colors.emplace_back(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
+    glm::vec4 color = glm::vec4(r, g, b, a);
+
+    return color;
 }
 
 float CalculateRouteNode::movementCost(CostCell& current, CostCell& neighbor, bool diagonal)
@@ -363,7 +419,7 @@ float CalculateRouteNode::movementCost(CostCell& current, CostCell& neighbor, bo
 
     float cost = distance / velocity;
 
-    cost *= neighbor.cost * 0.1f; // terrain modifiers
+    cost *= neighbor.simulated_cost * 0.5f; // terrain modifiers
 
     return cost;
 }

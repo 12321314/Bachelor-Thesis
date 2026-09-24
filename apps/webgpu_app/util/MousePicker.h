@@ -25,6 +25,7 @@ public:
     void save_gpx();
     void clear_gpx();
     bool enabled() const;
+    std::vector<glm::vec4> getPoints();
 
     signals:
         void point_picked(const glm::dvec3& position);
@@ -39,7 +40,7 @@ private:
 
     bool m_enabled = false;
 
-    std::vector<glm::dvec3> m_picked_points;
+    std::vector<glm::vec4> m_picked_points;
 
     const std::string m_gpx_path = "../../apps/webgpu_app/resources/gpx/picked_track.gpx";;
 };

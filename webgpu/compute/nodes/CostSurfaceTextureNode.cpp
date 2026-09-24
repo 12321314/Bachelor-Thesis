@@ -83,10 +83,10 @@ void CostSurfaceTextureNode::run_impl()
 
                 a = 255;
 
-                if (t < 0.5f) {
+                if (t < 0.3f) {
 
                     // green to yellow
-                    float k = t / 0.5f;
+                    float k = t / 0.3f;
 
                     r = (unsigned char)(255 * k);
                     g = 255;
@@ -95,7 +95,7 @@ void CostSurfaceTextureNode::run_impl()
                 } else {
 
                     // yellow to red
-                    float k = (t - 0.5f) / 0.5f;
+                    float k = (t - 0.3f) / 0.7f;
 
                     r = 255;
                     g = (unsigned char)(255 * (1.0f - k));

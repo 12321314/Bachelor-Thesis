@@ -19,7 +19,9 @@
 #include "NodeRendererFactory.h"
 
 #include "BufferToTextureNodeRenderer.h"
+#include "CalculateRouteNodeRenderer.h"
 #include "ComputeAvalancheTrajectoriesNodeRenderer.h"
+#include "ComputeCostSurfaceNodeRenderer.h"
 #include "ComputeReleasePointsNodeRenderer.h"
 #include "ComputeSnowNodeRenderer.h"
 #include "CostSurfaceTextureNodeRenderer.h"
@@ -39,6 +41,7 @@
 #include <webgpu/compute/nodes/SelectTilesNode.h>
 
 #include "compute/OverlayRenderNode.h"
+#include "webgpu/compute/nodes/CalculateRouteNode.h"
 #include "webgpu/compute/nodes/CostSurfaceTextureNode.h"
 
 namespace webgpu_app {
@@ -66,6 +69,10 @@ std::unique_ptr<NodeRenderer> NodeRendererFactory::create(const std::string& nam
         return std::make_unique<GPXTrackNodeRenderer>(name, *n);
     if (auto* n = dynamic_cast<nodes::CostSurfaceTextureNode*>(&node))
         return std::make_unique<CostSurfaceTextureNodeRenderer>(name, *n);
+    if (auto* n = dynamic_cast<nodes::CalculateRouteNode*>(&node))
+        return std::make_unique<CalculateRouteNodeRenderer>(name, *n);
+    if (auto* n = dynamic_cast<nodes::ComputeCostSurfaceNode*>(&node))
+        return std::make_unique<ComputeCostSurfaceNodeRenderer>(name, *n);
     return std::make_unique<NodeRenderer>(name, node);
 }
 
